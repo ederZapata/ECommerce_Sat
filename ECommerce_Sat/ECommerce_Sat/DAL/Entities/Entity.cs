@@ -14,6 +14,6 @@ namespace ECommerce_Sat.DAL.Entities
 
         [Display(Name = "Fecha de modificación")]
 
-        public  virtual string? ModifieldDate { get; set;} //Virtual - Override
+        public  virtual DateTime? ModifiedDate { get; set;} //Virtual - Override
     }
 }

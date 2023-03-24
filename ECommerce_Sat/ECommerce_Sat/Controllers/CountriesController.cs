@@ -23,7 +23,7 @@ namespace ECommerce_Sat.Controllers
         public async Task<IActionResult> Index()
         {
               return _context.Countries != null ? 
-                          View(await _context.Countries.ToListAsync()) :
+                          View(await _context.Countries.ToListAsync()) : // Select * From Countries
                           Problem("Entity set 'DataBaseContext.Countries'  is null.");
         }
 
