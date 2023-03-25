@@ -19,7 +19,15 @@ namespace ECommerce_Sat.Controllers
             _context = context;
         }
 
+        // GET --> SELECT * FROM...
+        // POST ----> CREATE/INSERT....
+        // PUT ----> UPDATE....
+        // PATCH ---> UPDATE...
+        // DELETE ---> DEÑETE...
+
+
         // GET: Countries
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
               return _context.Countries != null ? 
@@ -28,6 +36,7 @@ namespace ECommerce_Sat.Controllers
         }
 
         // GET: Countries/Details/5
+        [HttpGet]
         public async Task<IActionResult> Details(Guid? id)
         {
             if (id == null || _context.Countries == null)
@@ -35,7 +44,7 @@ namespace ECommerce_Sat.Controllers
                 return NotFound();
             }
 
-            var country = await _context.Countries
+            var country = await _context.Countries //Select * From Countries Were Id = gffrrr
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (country == null)
             {
@@ -46,6 +55,7 @@ namespace ECommerce_Sat.Controllers
         }
 
         // GET: Countries/Create
+        [HttpGet]
         public IActionResult Create()
         {
             return View();
@@ -56,13 +66,13 @@ namespace ECommerce_Sat.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name,Id,CreatedDate,ModifieldDate")] Country country)
+        public async Task<IActionResult> Create(Country country)
         {
             if (ModelState.IsValid)
             {
                 country.Id = Guid.NewGuid();
                 _context.Add(country);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();//Inseet Into Countries (Id,Name,CreateDate,ModifielDate) Values ('4','Suiza','24/06/2023')
                 return RedirectToAction(nameof(Index));
             }
             return View(country);
@@ -89,7 +99,7 @@ namespace ECommerce_Sat.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Name,Id,CreatedDate,ModifieldDate")] Country country)
+        public async Task<IActionResult> Edit(Guid id, Country country)
         {
             if (id != country.Id)
             {
@@ -101,7 +111,7 @@ namespace ECommerce_Sat.Controllers
                 try
                 {
                     _context.Update(country);
-                    await _context.SaveChangesAsync();
+                    await _context.SaveChangesAsync();//Update Countries Set Name = 'Argentina55',ModifieldDate = ´18/3/2023´ where Id = ''
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -128,7 +138,7 @@ namespace ECommerce_Sat.Controllers
             }
 
             var country = await _context.Countries
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m => m.Id == id);//Select * From Countries Where Id = 8
             if (country == null)
             {
                 return NotFound();
@@ -146,13 +156,13 @@ namespace ECommerce_Sat.Controllers
             {
                 return Problem("Entity set 'DataBaseContext.Countries'  is null.");
             }
-            var country = await _context.Countries.FindAsync(id);
+            var country = await _context.Countries.FindAsync(id);//Select * From Countries Where Id = 8
             if (country != null)
             {
                 _context.Countries.Remove(country);
             }
             
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();//Delete Countries Where Id = 8
             return RedirectToAction(nameof(Index));
         }
 
