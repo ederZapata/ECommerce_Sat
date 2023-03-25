@@ -70,10 +70,28 @@ namespace ECommerce_Sat.Controllers
         {
             if (ModelState.IsValid)
             {
-                country.Id = Guid.NewGuid();
                 _context.Add(country);
-                await _context.SaveChangesAsync();//Inseet Into Countries (Id,Name,CreateDate,ModifielDate) Values ('4','Suiza','24/06/2023')
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+
+                }
+                catch (DbUpdateException dbUpdateException)
+                {
+                    if (dbUpdateException.InnerException.Message.Contains("duplicate"))
+                    {
+                        ModelState.AddModelError(string.Empty, "Ya existe un país con el mismo nombre.");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    ModelState.AddModelError(string.Empty, exception.Message);
+                }
             }
             return View(country);
         }
@@ -111,20 +129,24 @@ namespace ECommerce_Sat.Controllers
                 try
                 {
                     _context.Update(country);
-                    await _context.SaveChangesAsync();//Update Countries Set Name = 'Argentina55',ModifieldDate = ´18/3/2023´ where Id = ''
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (DbUpdateException dbUpdateException)
                 {
-                    if (!CountryExists(country.Id))
+                    if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                     {
-                        return NotFound();
+                        ModelState.AddModelError(string.Empty, "Ya existe un país con el mismo nombre.");
                     }
                     else
                     {
-                        throw;
+                        ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                catch (Exception exception)
+                {
+                    ModelState.AddModelError(string.Empty, exception.Message);
+                }
             }
             return View(country);
         }
