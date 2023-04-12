@@ -10,6 +10,12 @@ namespace ECommerce_Sat.DAL.Entities
 
         public string Name { get; set; }
 
-       
+        [Display(Name = "Estados")] //Nombre que quiero mostrar en la web
+
+        public ICollection<State> States { get; set; }
+
+        [Display(Name = "Número Estados")] //Nombre que quiero mostrar en la web
+
+        public int StateNumber => States == null ? 0 : States.Count;// IF TERNARIO  SI Estate ES (==) null ENTONCES (?) mande 0 sino (:) mande el contador
     }
 }

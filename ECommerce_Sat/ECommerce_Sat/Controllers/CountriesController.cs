@@ -7,12 +7,15 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ECommerce_Sat.DAL;
 using ECommerce_Sat.DAL.Entities;
+using ECommerce_Sat.Models;
+using System.Diagnostics.Metrics;
 
 namespace ECommerce_Sat.Controllers
 {
     public class CountriesController : Controller
     {
         private readonly DataBaseContext _context;
+        private Guid countryId;
 
         public CountriesController(DataBaseContext context)
         {
@@ -30,9 +33,8 @@ namespace ECommerce_Sat.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-              return _context.Countries != null ? 
-                          View(await _context.Countries.ToListAsync()) : // Select * From Countries
-                          Problem("Entity set 'DataBaseContext.Countries'  is null.");
+            return View(await _context.Countries.Include(c => c.States).ToListAsync());//el include hace las veces del INNER JOIN
+
         }
 
         // GET: Countries/Details/5
@@ -178,19 +180,129 @@ namespace ECommerce_Sat.Controllers
             {
                 return Problem("Entity set 'DataBaseContext.Countries'  is null.");
             }
-            var country = await _context.Countries.FindAsync(id);//Select * From Countries Where Id = 8
-            if (country != null)
+            var country = await _context.Countries.FirstOrDefaultAsync(m => m.Id == id); if (country != null)
             {
                 _context.Countries.Remove(country);
             }
-            
+
             await _context.SaveChangesAsync();//Delete Countries Where Id = 8
             return RedirectToAction(nameof(Index));
         }
 
-        private bool CountryExists(Guid id)
+        
+        [HttpGet]
+        public async Task<IActionResult> AddState(Guid? countryid)
         {
-          return (_context.Countries?.Any(e => e.Id == id)).GetValueOrDefault();
+            if (countryid == null)
+            {
+                return NotFound();
+            }
+
+            Country country = await _context.Countries.FirstOrDefaultAsync(m => m.Id == countryId);
+
+            if (countryid == null)
+            {
+                return NotFound();
+            }
+
+            StateViewModel stateViewModel = new()
+            {
+                CountryId = country.Id,
+            };
+
+            return View(stateViewModel);
+
         }
-    }
+
+
+       
+        [HttpGet]
+        public async Task<IActionResult> EditState(Guid? id)
+        {
+            if (stateId == null || _context.States == null)
+            {
+                return NotFound();
+            }
+
+            State state = await _context.States
+                .Incluide(sbyte => s.Country)
+                .FirstOrDefaultAsync(s => s.Id == stateId);
+            
+            if (state == null)
+            {
+                return NotFound();
+            }
+
+            return View(country);
+        }
+
+        // GET: Countries/Create
+        [HttpGet]
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        StateViewModel stateViewModel = new()
+        {
+            CountryId = state.Country.Id,
+            Id = State.Id,
+            Name = SqlServerTableBuilderExtensions.name,
+            CreatedDate = State.CreatedDate,
+        };
+
+        return View(StateViewModel);
+
+
+
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditState(Guid  CountryId, StateViewModel stateViewModel)
+        {
+            if (countryId != stateViewModel.CountryId)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    State state = new()
+                    {
+                        Id = stateViewModel.Id,
+                        Name = stateViewModel.Name,
+                        CreatedDate = stateViewModel.CreatedDate,
+                        ModifiedDate = DateTime.UtcNow,
+                    };
+
+                    _context.Update(state);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Details, new { Id = stateViewModel.CountryId}));
+                }
+                catch (DbUpdateException dbUpdateException)
+                {
+                    if (dbUpdateException.InnerException.Message.Contains("duplicate"))
+                    {
+                        ModelState.AddModelError(string.Empty, "Ya existe un país con el mismo nombre.");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    ModelState.AddModelError(string.Empty, exception.Message);
+                }
+            }
+            return View(stateViewModel);
+        }
+
+        private string? nameof(Func<Guid?, Task<IActionResult>> details, object value)
+        {
+            throw new NotImplementedException();
+        }
+    }    
 }
